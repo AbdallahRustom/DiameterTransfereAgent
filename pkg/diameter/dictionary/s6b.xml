@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diameter>
+    <application id="16777272" type="auth" name="TGPP S6b">
+        <vendor id="10415" name="TGPP"/>
+        
+        <!-- Define AVPs specific to S6b -->
+        <avp name="Auth-Application-Id" code="258" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="Unsigned32"/>
+        </avp>
+        <avp name="Vendor-Id" code="266" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="Unsigned32"/>
+        </avp>
+        <avp name="Auth-Request-Type" code="274" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="Enumerated">
+                <item code="1" name="AUTHENTICATE_ONLY"/>
+                <item code="2" name="AUTHORIZE_ONLY"/>
+                <item code="3" name="AUTHORIZE_AUTHENTICATE"/>
+            </data>
+        </avp>
+        <avp name="Session-Timeout" code="27" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="Unsigned32"/>
+        </avp>
+        <avp name="Origin-Host" code="264" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="DiameterIdentity"/>
+        </avp>
+        <avp name="Origin-Realm" code="296" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="DiameterIdentity"/>
+        </avp>
+        <avp name="Destination-Realm" code="283" must="M" may="P" must-not="V" may-encrypt="-">
+            <data type="DiameterIdentity"/>
+        </avp>
+        <avp name="RAT-Type" code="1032" must="M,V" may="P" may-encrypt="Y" vendor-id="10415">
+            <data type="Enumerated">
+                <item code="0" name="WLAN"/>
+                <item code="1" name="VIRTUAL"/>
+                <item code="1000" name="UTRAN"/>
+                <item code="1001" name="GERAN"/>
+                <item code="1002" name="GAN"/>
+                <item code="1003" name="HSPA_EVOLUTION"/>
+                <item code="1004" name="EUTRAN"/>
+                <item code="2000" name="CDMA2000_1X"/>
+                <item code="2001" name="HRPD"/>
+                <item code="2002" name="UMB"/>
+                <item code="2003" name="EHRPD"/>
+            </data>
+        </avp>
+        <avp name="User-Name" code="1" must="M" may="P" must-not="V" may-encrypt="Y">
+            <data type="UTF8String"/>
+        </avp>
+        <avp name="MIP6-Feature-Vector" code="124" must="M" may="P" may-encrypt="N" vendor-id="0">
+            <data type="Unsigned64"/>
+        </avp>
+        <avp name="MIP6-Agent-Info" code="486" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="10415">
+            <data type="Grouped">
+                <rule avp="MIP-Home-Agent-Address" required="false" max="2"/>
+                <rule avp="MIP-Home-Agent-Host" required="false" max="1"/>
+                <rule avp="MIP6-Home-Link-Prefix" required="false" max="1"/>
+                <rule avp="AVP" required="false"/>
+            </data>
+        </avp>
+        <avp name="Visited-Network-Identifier" code="600" must="M,V" may-encrypt="N" vendor-id="10415">
+            <data type="OctetString"/>
+        </avp>
+        <avp name="Service-Selection" code="493" must="M" may="P" must-not="V" may-encrypt="Y" vendor-id="0">
+            <data type="UTF8String"/>
+        </avp>
+
+        <!-- Define commands specific to S6b -->
+        <command code="265" short="AA" name="AA">
+            <request>
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Destination-Realm" required="true" max="1"/>
+                <rule avp="Auth-Application-Id" required="true" max="1"/>
+                <rule avp="Vendor-Id" required="true" max="1"/>
+                <rule avp="Auth-Request-Type" required="true" max="1"/>
+                <rule avp="Session-Timeout" required="false" max="1"/>
+                <rule avp="RAT-Type" required="false" max="1"/>
+                <rule avp="User-Name" required="false" max="1"/>
+                <rule avp="MIP6-Feature-Vector" required="false" max="1"/>
+                <rule avp="MIP6-Agent-Info" required="false" max="1"/>
+                <rule avp="Visited-Network-Identifier" required="false" max="1"/>
+                <rule avp="Service-Selection" required="false" max="1"/>
+                <!-- Add other AVP rules as needed -->
+            </request>
+            <answer>
+                <rule avp="Session-Id" required="true" max="1"/>
+                <rule avp="Result-Code" required="true" max="1"/>
+                <rule avp="Origin-Host" required="true" max="1"/>
+                <rule avp="Origin-Realm" required="true" max="1"/>
+                <rule avp="Auth-Application-Id" required="true" max="1"/>
+                <rule avp="Vendor-Id" required="true" max="1"/>
+                <!-- Add other AVP rules as needed -->
+            </answer>
+        </command>
+    </application>
+</diameter>

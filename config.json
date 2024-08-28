@@ -1,0 +1,16 @@
+{
+  "diameter": {
+    "addr": "172.22.0.248:3868",
+    "ssl": false,
+    "diam_host": "DTA.epc.mnc001.mcc001.3gppnetwork.org",
+    "diam_realm": "epc.mnc001.mcc001.3gppnetwork.org",
+    "cert_file": "",
+    "key_file": "",
+    "network_type": "sctp"
+  },
+  "radius": {
+    "addr": "172.22.0.247:1812",
+    "secret": "secret",
+    "client_port": 2000
+  }
+}

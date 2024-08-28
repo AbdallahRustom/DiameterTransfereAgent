@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  dta:
+    image: dta:latest
+    container_name: dta
+    privileged: true
+    entrypoint: "sleep 100000 "
+    # volumes:
+    #   - ./config.json:/DiameterTransfereAgent/config.json
+    cap_add:
+      - NET_ADMIN
+    networks:
+      privnet:
+          ipv4_address: 172.22.0.248
+
+networks:
+    privnet:      # Using existing network of core network 
+        external:
+            name: docker_open5gs_default
