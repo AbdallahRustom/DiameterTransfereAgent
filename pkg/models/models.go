@@ -2,6 +2,12 @@ package models
 
 import "github.com/fiorix/go-diameter/v4/diam/datatype"
 
+const (
+	CCRequestTypeInitial     datatype.Enumerated = 1
+	CCRequestTypeUpdate      datatype.Enumerated = 2
+	CCRequestTypeTermination datatype.Enumerated = 3
+)
+
 type AuthenticationInformationRequest struct {
 	SessionID                   datatype.UTF8String         `avp:"Session-Id"`
 	OriginHost                  datatype.DiameterIdentity   `avp:"Origin-Host"`

@@ -60,6 +60,9 @@ type AccRequest struct {
 	UserLocationInfo string
 	Timezone         string
 	EventTimestamp   string
+	UsedInputOctets  uint32
+	UsedOutputOctets uint32
+	Acctsessiontime  uint32
 }
 type AccResponse struct {
 	Code radius.Code
@@ -172,8 +175,20 @@ func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 		rfc2865.FramedIPAddress_Set(packet, req.Ipv6FramedIP)
 	}
 	rfc2865.CalledStationID_SetString(packet, req.CalledStationID)
-	rfc2866.AcctDelayTime_Set(packet, req.AcctDelayTime)
 	rfc2866.AcctSessionID_Set(packet, []byte(req.AcctSessionID))
+
+	switch req.AcctStatus {
+
+	case rfc2866.AcctStatusType_Value_Start:
+		rfc2866.AcctDelayTime_Set(packet, req.AcctDelayTime)
+
+	case rfc2866.AcctStatusType_Value_InterimUpdate:
+		rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(req.UsedInputOctets))
+		rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets))
+		rfc2866.AcctInputPackets_Set(packet, 0)
+		rfc2866.AcctOutputPackets_Set(packet, 0)
+		rfc2866.AcctSessionTime_Set(packet, rfc2866.AcctSessionTime(req.Acctsessiontime))
+	}
 
 	// Helper function to add Vendor-Specific AVPs
 	vendorID := uint32(10415) // 3GPP Vendor ID

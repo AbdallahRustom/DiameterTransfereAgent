@@ -69,10 +69,19 @@ func ConvertToRadius(messagetype string, m *diam.Message, c diam.Conn) (radius.R
 		radiuspacket.Type = radius.AccountingRequest
 		radiuspacket.Username = string(req.SubscriptionId.SubscriptionIDData)
 
-		if req.CCRequestType == 1 {
+		switch req.CCRequestType {
+
+		case models.CCRequestTypeInitial:
 			radiuspacket.AcctStatus = rfc2866.AcctStatusType_Value_Start
-		} else {
-			//to be implemented
+
+		case models.CCRequestTypeUpdate:
+			radiuspacket.AcctStatus = rfc2866.AcctStatusType_Value_InterimUpdate
+			radiuspacket.UsedInputOctets = uint32(req.MultipleServiceCreditControl.UsedServiceUnit.CCInputOctets)
+			radiuspacket.UsedOutputOctets = uint32(req.MultipleServiceCreditControl.UsedServiceUnit.CCOutputOctets)
+			radiuspacket.Acctsessiontime = uint32(req.MultipleServiceCreditControl.UsedServiceUnit.CCTime)
+
+		case models.CCRequestTypeTermination:
+			radiuspacket.AcctStatus = rfc2866.AcctStatusType_Value_Stop
 		}
 
 		radiuspacket.PDPType = uint8(req.ServiceInformation.PsInformation.PDPType)
