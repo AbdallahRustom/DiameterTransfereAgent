@@ -9,7 +9,7 @@
     "network_type": "sctp"
   },
   "radius": {
-    "addr": "172.22.0.247:1812",
+    "addr": "172.22.0.247",
     "secret": "secret",
     "client_port": 2000
   }

@@ -61,6 +61,7 @@ func (s *Server) Start() {
 
 	mux.Handle("AIR", HandleAuthenticationInformation(*settings, s.requestChan, s.responseChan))
 	mux.Handle("AAR", HandleAuthorizationAuthenticationRequest(*settings, s.requestChan, s.responseChan))
+	mux.Handle("CCR", HandleCreditControlRequest(*settings, s.requestChan, s.responseChan))
 	mux.Handle("DPR", HandleDisconnectPeerRequest(*settings))
 	mux.HandleFunc("ALL", HandleALL)
 
@@ -104,6 +105,8 @@ func loadCustomDictionaries() (*dict.Parser, error) {
 		{"TGPP_S6a", "s6a.xml"},
 		{"TGPP_Swx", "swx.xml"},
 		{"TGPP_S6b", "s6b.xml"},
+		{"TGPP_GY", "gy.xml"},
+		{"TGPP_3GPP", "3gpp.xml"},
 	}
 
 	// Create a new parser
