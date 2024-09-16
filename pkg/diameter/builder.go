@@ -71,39 +71,53 @@ func BuildDiameterResponse(settings sm.Settings, req models.DiameterRequest, res
 		a.NewAVP(avp.CCRequestType, avp.Mbit, 0, r.CCRequestType)
 		a.NewAVP(avp.CCRequestNumber, avp.Mbit, 0, r.CCRequestNumber)
 
-		a.NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &diam.GroupedAVP{
-			AVP: []*diam.AVP{
-				diam.NewAVP(avp.TGPPRATType, avp.Mbit|avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.TGPPRATType),
-				diam.NewAVP(avp.RequestedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
-					AVP: []*diam.AVP{
-						diam.NewAVP(avp.CCTime, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCTime),
-						diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCOutputOctets),
-						diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCInputOctets),
-					},
-				}),
-				diam.NewAVP(avp.UsedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
-					AVP: []*diam.AVP{
-						diam.NewAVP(avp.CCTime, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCTime),
-						diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCOutputOctets),
-						diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCInputOctets),
-					},
-				}),
-				diam.NewAVP(avp.QoSInformation, avp.Mbit|avp.Vbit, VENDOR_3GPP, &diam.GroupedAVP{
-					AVP: []*diam.AVP{
-						diam.NewAVP(avp.QoSClassIdentifier, avp.Mbit|avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.QoSClassIdentifier),
-						diam.NewAVP(avp.APNAggregateMaxBitrateDL, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateDL),
-						diam.NewAVP(avp.APNAggregateMaxBitrateUL, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateUL),
-						diam.NewAVP(avp.AllocationRetentionPriority, avp.Vbit, VENDOR_3GPP, &diam.GroupedAVP{
-							AVP: []*diam.AVP{
-								diam.NewAVP(avp.PriorityLevel, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PriorityLevel),
-								diam.NewAVP(avp.PreemptionCapability, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PreEmptionCapability),
-								diam.NewAVP(avp.PreemptionVulnerability, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PreEmptionVulnerability),
-							},
-						}),
-					},
-				}),
-			},
-		})
+		if r.CCRequestType == models.CCRequestTypeInitial || r.CCRequestType == models.CCRequestTypeUpdate {
+			a.NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &diam.GroupedAVP{
+				AVP: []*diam.AVP{
+					diam.NewAVP(avp.GrantedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
+						AVP: []*diam.AVP{
+							diam.NewAVP(avp.CCTime, avp.Mbit, 0, datatype.Unsigned32(5)),
+							diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, datatype.Unsigned64(1024)),
+							diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, datatype.Unsigned64(1024)),
+						},
+					}),
+				},
+			})
+		}
+
+		// a.NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &diam.GroupedAVP{
+		// 	AVP: []*diam.AVP{
+		// 		diam.NewAVP(avp.TGPPRATType, avp.Mbit|avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.TGPPRATType),
+		// 		diam.NewAVP(avp.RequestedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
+		// 			AVP: []*diam.AVP{
+		// 				diam.NewAVP(avp.CCTime, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCTime),
+		// 				diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCOutputOctets),
+		// 				diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCInputOctets),
+		// 			},
+		// 		}),
+		// 		diam.NewAVP(avp.UsedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
+		// 			AVP: []*diam.AVP{
+		// 				diam.NewAVP(avp.CCTime, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCTime),
+		// 				diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCOutputOctets),
+		// 				diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCInputOctets),
+		// 			},
+		// 		}),
+		// 		diam.NewAVP(avp.QoSInformation, avp.Mbit|avp.Vbit, VENDOR_3GPP, &diam.GroupedAVP{
+		// 			AVP: []*diam.AVP{
+		// 				diam.NewAVP(avp.QoSClassIdentifier, avp.Mbit|avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.QoSClassIdentifier),
+		// 				diam.NewAVP(avp.APNAggregateMaxBitrateDL, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateDL),
+		// 				diam.NewAVP(avp.APNAggregateMaxBitrateUL, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateUL),
+		// 				diam.NewAVP(avp.AllocationRetentionPriority, avp.Vbit, VENDOR_3GPP, &diam.GroupedAVP{
+		// 					AVP: []*diam.AVP{
+		// 						diam.NewAVP(avp.PriorityLevel, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PriorityLevel),
+		// 						diam.NewAVP(avp.PreemptionCapability, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PreEmptionCapability),
+		// 						diam.NewAVP(avp.PreemptionVulnerability, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PreEmptionVulnerability),
+		// 					},
+		// 				}),
+		// 			},
+		// 		}),
+		// 	},
+		// })
 
 	case models.DisconnectPeerRequest:
 		a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
