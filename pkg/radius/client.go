@@ -49,7 +49,7 @@ type AccRequest struct {
 	AcctDelayTime    rfc2866.AcctDelayTime
 	AcctSessionID    string
 	IMSI             string
-	PDPType          uint8
+	PDPType          int32
 	ULAMBR           string
 	DLAMBR           string
 	SGSNAddress      net.IP
@@ -60,8 +60,8 @@ type AccRequest struct {
 	UserLocationInfo string
 	Timezone         string
 	EventTimestamp   string
-	UsedInputOctets  uint32
-	UsedOutputOctets uint32
+	UsedInputOctets  uint64
+	UsedOutputOctets uint64
 	Acctsessiontime  uint32
 }
 type AccResponse struct {
@@ -233,7 +233,11 @@ func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 	switch req.AcctStatus {
 
 	case rfc2866.AcctStatusType_Value_Start:
-		rfc2866.AcctDelayTime_Set(packet, req.AcctDelayTime)
+
+		if err := rfc2866.AcctDelayTime_Set(packet, req.AcctDelayTime); err != nil {
+			log.Printf("Error Setting AcctDelayTime: %v", err)
+			return err
+		}
 
 	case rfc2866.AcctStatusType_Value_InterimUpdate:
 

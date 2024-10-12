@@ -5,6 +5,7 @@ import (
 	"diametertransfereagent/pkg/radius"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/fiorix/go-diameter/v4/diam"
@@ -74,15 +75,15 @@ func ConvertToRadius(messagetype string, m *diam.Message, c diam.Conn) (radius.R
 
 		} else if req.CCRequestType == models.CCRequestTypeUpdate {
 			radiuspacket.AcctStatus = rfc2866.AcctStatusType_Value_InterimUpdate
-			radiuspacket.UsedInputOctets = uint32(req.MultipleServiceCreditControl.UsedServiceUnit.CCInputOctets)
-			radiuspacket.UsedOutputOctets = uint32(req.MultipleServiceCreditControl.UsedServiceUnit.CCOutputOctets)
+			radiuspacket.UsedInputOctets = uint64(req.MultipleServiceCreditControl.UsedServiceUnit.CCInputOctets)
+			radiuspacket.UsedOutputOctets = uint64(req.MultipleServiceCreditControl.UsedServiceUnit.CCOutputOctets)
 			radiuspacket.Acctsessiontime = uint32(req.MultipleServiceCreditControl.UsedServiceUnit.CCTime)
 
 		} else {
 			radiuspacket.AcctStatus = rfc2866.AcctStatusType_Value_Stop
 		}
 
-		radiuspacket.PDPType = uint8(req.ServiceInformation.PsInformation.PDPType)
+		radiuspacket.PDPType = int32(req.ServiceInformation.PsInformation.PDPType)
 
 		if req.ServiceInformation.PsInformation.PDPType == 0 {
 			radiuspacket.Ipv4FramedIP = net.IP(req.ServiceInformation.PsInformation.PDPAddress[0])
@@ -102,8 +103,8 @@ func ConvertToRadius(messagetype string, m *diam.Message, c diam.Conn) (radius.R
 		}
 		// radiuspacket.AcctSessionID = string(req.SessionID)
 		radiuspacket.IMSI = string(req.SubscriptionId.SubscriptionIDData)
-		radiuspacket.ULAMBR = string(req.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateUL)
-		radiuspacket.DLAMBR = string(req.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateDL)
+		radiuspacket.ULAMBR = strconv.FormatUint(uint64(req.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateUL), 10)
+		radiuspacket.DLAMBR = strconv.FormatUint(uint64(req.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateDL), 10)
 		radiuspacket.SGSNAddress = net.IP(req.ServiceInformation.PsInformation.SGSNAddress)
 		radiuspacket.GGSNAddress = net.IP(req.ServiceInformation.PsInformation.GGSNAddress)
 		radiuspacket.MCCMNC = string(req.ServiceInformation.PsInformation.TGPPSGSNMCCMNC)
