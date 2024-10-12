@@ -261,10 +261,6 @@ func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 				return err
 			}
 		}
-		if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets)); err != nil {
-			log.Printf("Error Setting AcctOutputOctets: %v", err)
-			return err
-		}
 
 		if err := rfc2866.AcctInputPackets_Set(packet, 0); err != nil {
 			log.Printf("Error Setting AcctInputPackets: %v", err)
