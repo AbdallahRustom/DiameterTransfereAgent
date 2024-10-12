@@ -9,6 +9,7 @@ import (
 
 	"diametertransfereagent/pkg/config"
 
+	"github.com/rwxe/overflow"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 	"layeh.com/radius/rfc2866"
@@ -241,22 +242,28 @@ func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 
 	case rfc2866.AcctStatusType_Value_InterimUpdate:
 
-		if req.UsedInputOctets <= uint64(^uint32(0)) {
-			if err := rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(req.UsedInputOctets)); err != nil {
+		if inputOctets, ok := overflow.Uint64ToUint32(req.UsedInputOctets); !ok {
+			log.Printf("UsedInputOctets value too large: %d", req.UsedInputOctets)
+			return fmt.Errorf("UsedInputOctets value too large: %d", req.UsedInputOctets)
+		} else {
+			if err := rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(inputOctets)); err != nil {
 				log.Printf("Error Setting AcctInputOctets: %v", err)
 				return err
 			}
-		} else {
-			log.Printf("UsedInputOctets value too large: %d", req.UsedInputOctets)
 		}
 
-		if req.UsedOutputOctets <= uint64(^uint32(0)) {
-			if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets)); err != nil {
+		if outputOctets, ok := overflow.Uint64ToUint32(req.UsedOutputOctets); !ok {
+			log.Printf("UsedOutputOctets value too large: %d", req.UsedOutputOctets)
+			return fmt.Errorf("UsedOutputOctets value too large: %d", req.UsedOutputOctets)
+		} else {
+			if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(outputOctets)); err != nil {
 				log.Printf("Error Setting AcctOutputOctets: %v", err)
 				return err
 			}
-		} else {
-			log.Printf("UsedOutputOctets value too large: %d", req.UsedOutputOctets)
+		}
+		if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets)); err != nil {
+			log.Printf("Error Setting AcctOutputOctets: %v", err)
+			return err
 		}
 
 		if err := rfc2866.AcctInputPackets_Set(packet, 0); err != nil {
