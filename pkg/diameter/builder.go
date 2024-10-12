@@ -2,6 +2,7 @@ package diameter
 
 import (
 	"diametertransfereagent/pkg/models"
+	"log"
 	"net"
 
 	"github.com/fiorix/go-diameter/v4/diam"
@@ -18,17 +19,31 @@ func BuildDiameterResponse(settings sm.Settings, req models.DiameterRequest, res
 	case models.AuthenticationInformationRequest:
 		// SessionID is required to be the AVP in position 1
 		a.InsertAVP(diam.NewAVP(avp.SessionID, avp.Mbit, 0, r.SessionID))
-		a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
-		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
-		a.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
+		_, err := a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
+		if err != nil {
+			log.Printf("Error Setting OriginHost: %v", err)
+		}
+
+		_, err = a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
+		if err != nil {
+			log.Printf("Error Setting OriginRealm: %v", err)
+		}
+		_, err = a.NewAVP(avp.VendorSpecificApplicationID, avp.Mbit, 0, &diam.GroupedAVP{
 			AVP: []*diam.AVP{
 				diam.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, r.VendorSpecificApplicationID.AuthApplicationID),
 				diam.NewAVP(avp.VendorID, avp.Mbit, 0, r.VendorSpecificApplicationID.VendorID),
 			},
 		})
-		a.NewAVP(avp.AuthSessionState, avp.Mbit, 0, r.AuthSessionState)
+		if err != nil {
+			log.Printf("Error Setting VendorSpecificApplicationID: %v", err)
+		}
 
-		a.NewAVP(avp.AuthenticationInfo, avp.Mbit, VENDOR_3GPP, &diam.GroupedAVP{
+		_, err = a.NewAVP(avp.AuthSessionState, avp.Mbit, 0, r.AuthSessionState)
+		if err != nil {
+			log.Printf("Error Setting AuthSessionState: %v", err)
+		}
+
+		_, err = a.NewAVP(avp.AuthenticationInfo, avp.Mbit, VENDOR_3GPP, &diam.GroupedAVP{
 			AVP: []*diam.AVP{
 				diam.NewAVP(avp.EUTRANVector, avp.Mbit, VENDOR_3GPP, &diam.GroupedAVP{
 					AVP: []*diam.AVP{
@@ -40,39 +55,85 @@ func BuildDiameterResponse(settings sm.Settings, req models.DiameterRequest, res
 				}),
 			},
 		})
+		if err != nil {
+			log.Printf("Error Setting AuthenticationInfo: %v", err)
+		}
 		if radiusIp != nil {
-			a.NewAVP(avp.FramedIPAddress, avp.Mbit, 0, datatype.OctetString(radiusIp.To4()))
+			_, err := a.NewAVP(avp.FramedIPAddress, avp.Mbit, 0, datatype.OctetString(radiusIp.To4()))
+			if err != nil {
+				log.Printf("Error Setting FramedIPAddress: %v", err)
+			}
 		}
 		if radiusMtu != 0 {
-			a.NewAVP(avp.FramedMTU, avp.Mbit, 0, datatype.Unsigned32(radiusMtu))
+			_, err := a.NewAVP(avp.FramedMTU, avp.Mbit, 0, datatype.Unsigned32(radiusMtu))
+			if err != nil {
+				log.Printf("Error Setting FramedMTU: %v", err)
+			}
 		}
 
 	case models.AuthenticationAuthorizationRequest:
 		// SessionID is required to be the AVP in position 1
 		a.InsertAVP(diam.NewAVP(avp.SessionID, avp.Mbit, 0, r.SessionID))
-		a.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, r.AuthApplicationID)
-		a.NewAVP(avp.AuthRequestType, avp.Mbit, 0, r.AuthRequestType)
-		a.NewAVP(avp.SessionTimeout, avp.Mbit, 0, datatype.Unsigned32(7200))
-		a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
-		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
+		_, err := a.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, r.AuthApplicationID)
+		if err != nil {
+			log.Printf("Error Setting AuthApplicationID: %v", err)
+		}
+		_, err = a.NewAVP(avp.AuthRequestType, avp.Mbit, 0, r.AuthRequestType)
+		if err != nil {
+			log.Printf("Error Setting AuthRequestType: %v", err)
+		}
+		_, err = a.NewAVP(avp.SessionTimeout, avp.Mbit, 0, datatype.Unsigned32(7200))
+		if err != nil {
+			log.Printf("Error Setting SessionTimeout: %v", err)
+		}
+		_, err = a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
+		if err != nil {
+			log.Printf("Error Setting OriginHost: %v", err)
+		}
+		_, err = a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
+		if err != nil {
+			log.Printf("Error Setting OriginRealm: %v", err)
+		}
 		if radiusIp != nil {
-			a.NewAVP(avp.FramedIPAddress, avp.Mbit, 0, datatype.OctetString(radiusIp.To4()))
+			_, err := a.NewAVP(avp.FramedIPAddress, avp.Mbit, 0, datatype.OctetString(radiusIp.To4()))
+			if err != nil {
+				log.Printf("Error Setting FramedIPAddress: %v", err)
+			}
 		}
 		if radiusMtu != 0 {
-			a.NewAVP(avp.FramedMTU, avp.Mbit, 0, datatype.Unsigned32(radiusMtu))
+			_, err := a.NewAVP(avp.FramedMTU, avp.Mbit, 0, datatype.Unsigned32(radiusMtu))
+			if err != nil {
+				log.Printf("Error Setting FramedIPAddress: %v", err)
+			}
 		}
 
 	case models.CreditControlRequest:
 
 		a.InsertAVP(diam.NewAVP(avp.SessionID, avp.Mbit, 0, r.SessionID))
-		a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
-		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
-		a.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, r.AuthApplicationID)
-		a.NewAVP(avp.CCRequestType, avp.Mbit, 0, r.CCRequestType)
-		a.NewAVP(avp.CCRequestNumber, avp.Mbit, 0, r.CCRequestNumber)
+		_, err := a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
+		if err != nil {
+			log.Printf("Error Setting OriginHost: %v", err)
+		}
+
+		_, err = a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
+		if err != nil {
+			log.Printf("Error Setting OriginRealm: %v", err)
+		}
+		_, err = a.NewAVP(avp.AuthApplicationID, avp.Mbit, 0, r.AuthApplicationID)
+		if err != nil {
+			log.Printf("Error Setting AuthApplicationID: %v", err)
+		}
+		_, err = a.NewAVP(avp.CCRequestType, avp.Mbit, 0, r.CCRequestType)
+		if err != nil {
+			log.Printf("Error Setting CCRequestType: %v", err)
+		}
+		_, err = a.NewAVP(avp.CCRequestNumber, avp.Mbit, 0, r.CCRequestNumber)
+		if err != nil {
+			log.Printf("Error Setting CCRequestNumber: %v", err)
+		}
 
 		if r.CCRequestType == models.CCRequestTypeInitial || r.CCRequestType == models.CCRequestTypeUpdate {
-			a.NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &diam.GroupedAVP{
+			_, err = a.NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &diam.GroupedAVP{
 				AVP: []*diam.AVP{
 					diam.NewAVP(avp.GrantedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
 						AVP: []*diam.AVP{
@@ -83,45 +144,20 @@ func BuildDiameterResponse(settings sm.Settings, req models.DiameterRequest, res
 					}),
 				},
 			})
+			if err != nil {
+				log.Printf("Error Setting MultipleServicesCreditControl: %v", err)
+			}
 		}
 
-		// a.NewAVP(avp.MultipleServicesCreditControl, avp.Mbit, 0, &diam.GroupedAVP{
-		// 	AVP: []*diam.AVP{
-		// 		diam.NewAVP(avp.TGPPRATType, avp.Mbit|avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.TGPPRATType),
-		// 		diam.NewAVP(avp.RequestedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
-		// 			AVP: []*diam.AVP{
-		// 				diam.NewAVP(avp.CCTime, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCTime),
-		// 				diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCOutputOctets),
-		// 				diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.RequestedServiceUnit.CCInputOctets),
-		// 			},
-		// 		}),
-		// 		diam.NewAVP(avp.UsedServiceUnit, avp.Mbit, 0, &diam.GroupedAVP{
-		// 			AVP: []*diam.AVP{
-		// 				diam.NewAVP(avp.CCTime, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCTime),
-		// 				diam.NewAVP(avp.CCOutputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCOutputOctets),
-		// 				diam.NewAVP(avp.CCInputOctets, avp.Mbit, 0, r.MultipleServiceCreditControl.UsedServiceUnit.CCInputOctets),
-		// 			},
-		// 		}),
-		// 		diam.NewAVP(avp.QoSInformation, avp.Mbit|avp.Vbit, VENDOR_3GPP, &diam.GroupedAVP{
-		// 			AVP: []*diam.AVP{
-		// 				diam.NewAVP(avp.QoSClassIdentifier, avp.Mbit|avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.QoSClassIdentifier),
-		// 				diam.NewAVP(avp.APNAggregateMaxBitrateDL, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateDL),
-		// 				diam.NewAVP(avp.APNAggregateMaxBitrateUL, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.APNAggregateMaxBitrateUL),
-		// 				diam.NewAVP(avp.AllocationRetentionPriority, avp.Vbit, VENDOR_3GPP, &diam.GroupedAVP{
-		// 					AVP: []*diam.AVP{
-		// 						diam.NewAVP(avp.PriorityLevel, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PriorityLevel),
-		// 						diam.NewAVP(avp.PreemptionCapability, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PreEmptionCapability),
-		// 						diam.NewAVP(avp.PreemptionVulnerability, avp.Vbit, VENDOR_3GPP, r.MultipleServiceCreditControl.Qos.AllocationRetentionPriority.PreEmptionVulnerability),
-		// 					},
-		// 				}),
-		// 			},
-		// 		}),
-		// 	},
-		// })
-
 	case models.DisconnectPeerRequest:
-		a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
-		a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
+		_, err := a.NewAVP(avp.OriginHost, avp.Mbit, 0, settings.OriginHost)
+		if err != nil {
+			log.Printf("Error Setting OriginHost: %v", err)
+		}
+		_, err = a.NewAVP(avp.OriginRealm, avp.Mbit, 0, settings.OriginRealm)
+		if err != nil {
+			log.Printf("Error Setting OriginRealm: %v", err)
+		}
 	}
 
 	return a

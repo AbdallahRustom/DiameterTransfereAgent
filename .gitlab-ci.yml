@@ -1,0 +1,53 @@
+variables:
+  OGS_SRC_REPO_BRANCH: $CI_COMMIT_REF_NAME # In Dockerfile of builder, o5gs source code will switch to this branch if exists 
+  IMG_TAG: $CI_COMMIT_REF_SLUG
+  DOCKER_FILE: CNF/Dockerfile
+  DOCKER_SNAPSHOT_IMAGE: "docker-public-unstable-hosted-cicd-nexus.rp-ocn.apps.ocn.infra.ftgroup/olb/${OCI}:$IMG_TAG"
+  DOCKER_BUILD_CACHE_DISABLED: "true"
+  DOCKER_BUILD_ARGS: "--build-arg IMG_TAG=$IMG_TAG --build-arg OGS_SRC_REPO_USER=$OGS_SRC_REPO_USER --build-arg OGS_SRC_REPO_PWD=$OGS_SRC_REPO_PWD"
+  # CHECKMARX_PROJECTNAME: "CxServer/ORANGE/WIN/OINIS/2G6/open5gs"
+  # CHECKMARX_FORCE_SCAN: "False"
+  GO_BUILD_MODE: application
+
+include:
+  - project: 'to-be-continuous/docker'
+    ref: '5.7.1'
+    file: '/templates/gitlab-ci-docker.yml'
+  - project: "to-be-continuous/gitleaks"
+    ref: "2.1"
+    file: "templates/gitlab-ci-gitleaks.yml"
+  # - project: 'to-be-continuous/custom/checkmarx'
+  #   ref: '2.3.1'
+  #   file: '/templates/gitlab-ci-checkmarx.yml'
+  - project: 'to-be-continuous/golang'
+    ref: '4.11.0'
+    file: '/templates/gitlab-ci-golang.yml'
+
+stages:
+  - build
+  - test
+  - package-build
+  - package-test
+  - deploy
+  - publish
+
+docker-kaniko-build:
+  stage: package-build
+  variables:
+    OCI: dta
+    DOCKER_FILE: CNF/Dockerfile
+    DOCKER_BUILD_ARGS: "--build-arg OGS_SRC_REPO_BRANCH=$OGS_SRC_REPO_BRANCH --build-arg OGS_SRC_REPO_USER=$OGS_SRC_REPO_USER --build-arg OGS_SRC_REPO_PWD=$OGS_SRC_REPO_PWD"
+    DOCKER_SNAPSHOT_IMAGE: "docker-public-unstable-hosted-cicd-nexus.rp-ocn.apps.ocn.infra.ftgroup/olb/${OCI}:$IMG_TAG"
+  rules:
+    - if: $DOCKER_BUILD_TOOL == "kaniko"
+      changes:
+      - CNF/*
+      - cmd/*
+      - .gitlab-ci.yml
+      - internal/*
+      - pkg/*/*
+      
+docker-publish:
+  stage: publish
+  rules:
+    - when: never

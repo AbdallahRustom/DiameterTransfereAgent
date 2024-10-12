@@ -134,13 +134,40 @@ func NewClient(cfg config.RadiusConfig, requestChan chan Request, responseChan c
 func (c *Client) SendAccessRequest(ctx context.Context, req AuthRequest) error {
 
 	packet := radius.New(radius.CodeAccessRequest, []byte(c.cfg.Secret))
-	rfc2865.UserName_SetString(packet, req.Username)
-	rfc2865.UserPassword_SetString(packet, req.Password)
-	rfc2865.NASIPAddress_Set(packet, net.ParseIP(req.NASIPAddress))
-	rfc2865.NASPortType_Set(packet, req.NASPortType)
-	rfc2865.ServiceType_Set(packet, req.ServiceType)
-	rfc2865.CalledStationID_SetString(packet, req.CalledStationID)
-	rfc2865.CallingStationID_SetString(packet, req.CallingStationID)
+	if err := rfc2865.UserName_SetString(packet, req.Username); err != nil {
+		log.Printf("Error Setting Username: %v", err)
+		return err
+	}
+
+	if err := rfc2865.UserPassword_SetString(packet, req.Password); err != nil {
+		log.Printf("Error Setting Password: %v", err)
+		return err
+	}
+
+	if err := rfc2865.NASIPAddress_Set(packet, net.ParseIP(req.NASIPAddress)); err != nil {
+		log.Printf("Error Setting NASIPAddress: %v", err)
+		return err
+	}
+
+	if err := rfc2865.NASPortType_Set(packet, req.NASPortType); err != nil {
+		log.Printf("Error Setting NASPortType: %v", err)
+		return err
+	}
+
+	if err := rfc2865.ServiceType_Set(packet, req.ServiceType); err != nil {
+		log.Printf("Error Setting ServiceType: %v", err)
+		return err
+	}
+
+	if err := rfc2865.CalledStationID_SetString(packet, req.CalledStationID); err != nil {
+		log.Printf("Error Setting CalledStationID: %v", err)
+		return err
+	}
+
+	if err := rfc2865.CallingStationID_SetString(packet, req.CallingStationID); err != nil {
+		log.Printf("Error Setting CallingStationID: %v", err)
+		return err
+	}
 
 	packet.Attributes.Add(rfc2865.FramedProtocol_Type, radius.NewInteger(FramedProtocolGPRSPDPContext))
 
@@ -166,16 +193,42 @@ func (c *Client) SendAccessRequest(ctx context.Context, req AuthRequest) error {
 func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 
 	packet := radius.New(radius.CodeAccountingRequest, []byte(c.cfg.Secret))
-	rfc2865.UserName_SetString(packet, req.Username)
-	rfc2866.AcctStatusType_Set(packet, req.AcctStatus)
-	if req.PDPType == 0 {
-		rfc2865.FramedIPAddress_Set(packet, req.Ipv4FramedIP)
-	} else {
-		rfc2865.FramedIPAddress_Set(packet, req.Ipv4FramedIP)
-		rfc2865.FramedIPAddress_Set(packet, req.Ipv6FramedIP)
+
+	if err := rfc2865.UserName_SetString(packet, req.Username); err != nil {
+		log.Printf("Error Setting UserName: %v", err)
+		return err
 	}
-	rfc2865.CalledStationID_SetString(packet, req.CalledStationID)
-	rfc2866.AcctSessionID_Set(packet, []byte(req.AcctSessionID))
+
+	if err := rfc2866.AcctStatusType_Set(packet, req.AcctStatus); err != nil {
+		log.Printf("Error Setting AcctStatusType: %v", err)
+		return err
+	}
+
+	if req.PDPType == 0 {
+		if err := rfc2865.FramedIPAddress_Set(packet, req.Ipv4FramedIP); err != nil {
+			log.Printf("Error Setting FramedIPAddress: %v", err)
+			return err
+		}
+	} else {
+		if err := rfc2865.FramedIPAddress_Set(packet, req.Ipv4FramedIP); err != nil {
+			log.Printf("Error Setting FramedIPAddress: %v", err)
+			return err
+		}
+		if err := rfc2865.FramedIPAddress_Set(packet, req.Ipv6FramedIP); err != nil {
+			log.Printf("Error Setting FramedIPAddressipv6: %v", err)
+			return err
+		}
+	}
+
+	if err := rfc2865.CalledStationID_SetString(packet, req.CalledStationID); err != nil {
+		log.Printf("Error Setting CalledStationID: %v", err)
+		return err
+	}
+
+	if err := rfc2866.AcctSessionID_Set(packet, []byte(req.AcctSessionID)); err != nil {
+		log.Printf("Error Setting AcctSessionID: %v", err)
+		return err
+	}
 
 	switch req.AcctStatus {
 
@@ -183,11 +236,31 @@ func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 		rfc2866.AcctDelayTime_Set(packet, req.AcctDelayTime)
 
 	case rfc2866.AcctStatusType_Value_InterimUpdate:
-		rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(req.UsedInputOctets))
-		rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets))
-		rfc2866.AcctInputPackets_Set(packet, 0)
-		rfc2866.AcctOutputPackets_Set(packet, 0)
-		rfc2866.AcctSessionTime_Set(packet, rfc2866.AcctSessionTime(req.Acctsessiontime))
+
+		if err := rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(req.UsedInputOctets)); err != nil {
+			log.Printf("Error Setting AcctInputOctets: %v", err)
+			return err
+		}
+
+		if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets)); err != nil {
+			log.Printf("Error Setting AcctOutputOctets: %v", err)
+			return err
+		}
+
+		if err := rfc2866.AcctInputPackets_Set(packet, 0); err != nil {
+			log.Printf("Error Setting AcctInputPackets: %v", err)
+			return err
+		}
+
+		if err := rfc2866.AcctOutputPackets_Set(packet, 0); err != nil {
+			log.Printf("Error Setting AcctOutputPackets: %v", err)
+			return err
+		}
+
+		if err := rfc2866.AcctSessionTime_Set(packet, rfc2866.AcctSessionTime(req.Acctsessiontime)); err != nil {
+			log.Printf("Error Setting AcctSessionTime: %v", err)
+			return err
+		}
 	}
 
 	// Helper function to add Vendor-Specific AVPs

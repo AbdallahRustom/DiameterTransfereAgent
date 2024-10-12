@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"diametertransfereagent/pkg/config"
 	"diametertransfereagent/pkg/radius"
@@ -68,9 +69,17 @@ func (s *Server) Start() {
 	go PrintErrors(mux.ErrorReports())
 
 	if len(*ppaddr) > 0 {
-		go func() { log.Fatal(http.ListenAndServe(*ppaddr, nil)) }()
+		go func() {
+			srv := &http.Server{
+				Addr:         *ppaddr,
+				Handler:      nil,
+				ReadTimeout:  5 * time.Second,
+				WriteTimeout: 10 * time.Second,
+				IdleTimeout:  15 * time.Second,
+			}
+			log.Fatal(srv.ListenAndServe())
+		}()
 	}
-
 	// Start listening for incoming connections
 	go func() {
 		if err := listen(*networkType, *addr, *certFile, *keyFile, mux); err != nil {
@@ -118,7 +127,7 @@ func loadCustomDictionaries() (*dict.Parser, error) {
 	// Load each dictionary file
 	for _, dictEntry := range dictionaries {
 		filePath := defaultDictionaryPath + dictEntry.file
-		data, err := ioutil.ReadFile(filePath)
+		data, err := os.ReadFile(filePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read dictionary file %s: %w", filePath, err)
 		}
