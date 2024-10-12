@@ -8,7 +8,7 @@ variables:
   # CHECKMARX_PROJECTNAME: "CxServer/ORANGE/WIN/OINIS/2G6/open5gs"
   # CHECKMARX_FORCE_SCAN: "False"
   GO_BUILD_MODE: application
-  GO_SBOM_OPTS: "-main cmd/main.go"
+  GO_SBOM_OPTS: "-main cmd/"
 
 include:
   - project: 'to-be-continuous/docker'
