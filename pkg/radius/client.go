@@ -241,14 +241,22 @@ func (c *Client) SendAcctRequest(ctx context.Context, req AccRequest) error {
 
 	case rfc2866.AcctStatusType_Value_InterimUpdate:
 
-		if err := rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(req.UsedInputOctets)); err != nil {
-			log.Printf("Error Setting AcctInputOctets: %v", err)
-			return err
+		if req.UsedInputOctets <= uint64(^uint32(0)) {
+			if err := rfc2866.AcctInputOctets_Set(packet, rfc2866.AcctInputOctets(req.UsedInputOctets)); err != nil {
+				log.Printf("Error Setting AcctInputOctets: %v", err)
+				return err
+			}
+		} else {
+			log.Printf("UsedInputOctets value too large: %d", req.UsedInputOctets)
 		}
 
-		if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets)); err != nil {
-			log.Printf("Error Setting AcctOutputOctets: %v", err)
-			return err
+		if req.UsedOutputOctets <= uint64(^uint32(0)) {
+			if err := rfc2866.AcctOutputOctets_Set(packet, rfc2866.AcctOutputOctets(req.UsedOutputOctets)); err != nil {
+				log.Printf("Error Setting AcctOutputOctets: %v", err)
+				return err
+			}
+		} else {
+			log.Printf("UsedOutputOctets value too large: %d", req.UsedOutputOctets)
 		}
 
 		if err := rfc2866.AcctInputPackets_Set(packet, 0); err != nil {
