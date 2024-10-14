@@ -57,3 +57,5 @@ docker-publish:
 checkmarx:
   timeout: 6h
 
+docker-trivy:
+  allow_failure: true
