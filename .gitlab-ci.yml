@@ -1,30 +1,34 @@
 variables:
   DOCKER_BUILD_TOOL: kaniko
-  DOCKER_FILE: CNF/Dockerfile
   OCI: dta
-  IMG_TAG: $CI_COMMIT_REF_SLUG
-  DOCKER_SNAPSHOT_IMAGE: "docker-public-unstable-hosted-cicd-nexus.rp-ocn.apps.ocn.infra.ftgroup/olb/${OCI}:$IMG_TAG"
+  DOCKER_FILE: CNF/Dockerfile
+  # DOCKER_SNAPSHOT_IMAGE: "docker-public-unstable-hosted-cicd-nexus.rp-ocn.apps.ocn.infra.ftgroup/olb/${OCI}:$CI_COMMIT_REF_SLUG"
   DOCKER_BUILD_CACHE_DISABLED: "true"
-  OGS_SRC_REPO_BRANCH: $CI_COMMIT_REF_NAME 
-  DOCKER_BUILD_ARGS: "--build-arg IMG_TAG=$IMG_TAG --build-arg OGS_SRC_REPO_USER=$OGS_SRC_REPO_USER --build-arg OGS_SRC_REPO_PWD=$OGS_SRC_REPO_PWD"
-  # CHECKMARX_PROJECTNAME: "CxServer/ORANGE/WIN/OINIS/2G6/open5gs"
-  # CHECKMARX_FORCE_SCAN: "False"
+  DOCKER_BUILD_ARGS: "--build-arg SRC_REPO_BRANCH=$CI_COMMIT_REF_NAME --build-arg SRC_REPO_USER=$SRC_REPO_USER --build-arg SRC_REPO_PWD=$SRC_REPO_PWD"
   GO_BUILD_MODE: application
   GO_SBOM_OPTS: "-main cmd/"
+  CHECKMARX_PROJECTNAME: "CxServer/ORANGE/WIN/OINIS/2G6/Diameter-Translation-Agent"
+  CHECKMARX_FORCE_SCAN: "False"
+  SONAR_URL: "https://sqaas.dos.tech.orange"
+  SONAR_HOST_URL: "https://sqaas.dos.tech.orange"
+  SONAR_PROJECT_KEY: https://sqaas.dos.tech.orange/dashboard?id=win-oinis-olb-2g6-Diameter-Translation-Agent
 
 include:
   - project: 'to-be-continuous/docker'
-    ref: '5.7.1'
+    ref: '5.13.2'
     file: '/templates/gitlab-ci-docker.yml'
   - project: "to-be-continuous/gitleaks"
     ref: "2.1"
     file: "templates/gitlab-ci-gitleaks.yml"
-  # - project: 'to-be-continuous/custom/checkmarx'
-  #   ref: '2.3.1'
-  #   file: '/templates/gitlab-ci-checkmarx.yml'
+  - project: 'to-be-continuous/custom/checkmarx'
+    ref: '2.3.1'
+    file: '/templates/gitlab-ci-checkmarx.yml'
   - project: 'to-be-continuous/golang'
     ref: '4.11.0'
     file: '/templates/gitlab-ci-golang.yml'
+  - project: 'to-be-continuous/sonar'
+    ref: '4.2.2'
+    file: '/templates/gitlab-ci-sonar.yml'
 
 stages:
   - build
@@ -36,20 +40,20 @@ stages:
 
 docker-kaniko-build:
   stage: package-build
-  variables:
-    # DOCKER_FILE: CNF/Dockerfile
-    DOCKER_BUILD_ARGS: "--build-arg OGS_SRC_REPO_BRANCH=$OGS_SRC_REPO_BRANCH --build-arg OGS_SRC_REPO_USER=$OGS_SRC_REPO_USER --build-arg OGS_SRC_REPO_PWD=$OGS_SRC_REPO_PWD"
-    DOCKER_SNAPSHOT_IMAGE: "docker-public-unstable-hosted-cicd-nexus.rp-ocn.apps.ocn.infra.ftgroup/olb/${OCI}:$IMG_TAG"
   rules:
     - if: $DOCKER_BUILD_TOOL == "kaniko"
       changes:
-      - CNF/*
-      - cmd/*
-      - .gitlab-ci.yml
-      - internal/*
-      - pkg/*/*
+        - CNF/*
+        - cmd/*
+        - .gitlab-ci.yml
+        - internal/*
+        - pkg/*/*
       
 docker-publish:
   stage: publish
   rules:
     - when: never
+
+checkmarx:
+  timeout: 6h
+
