@@ -13,7 +13,7 @@ RUN apk add --no-cache iproute2=6.9.0-r0 \
     libcrypto3=3.3.2-r0
     
 # Set up Go environment
-RUN wget --trust-server-names --progress=dot:giga https://dl.google.com/go/go1.21.2.linux-amd64.tar.gz && \
+RUN wget --max-redirect=0 --progress=dot:giga https://dl.google.com/go/go1.21.2.linux-amd64.tar.gz && \
     tar -xvf go1.21.2.linux-amd64.tar.gz && \
     mv go /usr/local
 ENV GOROOT=/usr/local/go
