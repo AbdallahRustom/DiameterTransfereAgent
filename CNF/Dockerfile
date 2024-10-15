@@ -49,5 +49,9 @@ WORKDIR /dta
 COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/myapp ./myapp
 COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/config.json ./config.json
 COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/dictionary ./dictionary
+# Set the executable permission to read and execute only
+RUN chmod 755 ./myapp
+
+EXPOSE 3868
 
 ENTRYPOINT ["./myapp"]
