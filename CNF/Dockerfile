@@ -46,9 +46,9 @@ RUN addgroup -g 1000 dta \
 USER 1000
 WORKDIR /dta
 
-COPY --chown=dta:dta --from=builder --chmod=755 /DiameterTransfereAgent/myapp /dta/myapp 
-COPY --chown=dta:dta --from=builder --chmod=755 /DiameterTransfereAgent/config.json /dta/config.json
-COPY --chown=dta:dta --from=builder --chmod=755 /DiameterTransfereAgent/dictionary /dta/dictionary
+COPY --chown=dta:dta --chmod=755 --from=builder /DiameterTransfereAgent/myapp /dta/myapp 
+COPY --chown=dta:dta --chmod=755 --from=builder /DiameterTransfereAgent/config.json /dta/config.json
+COPY --chown=dta:dta --chmod=755 --from=builder /DiameterTransfereAgent/dictionary /dta/dictionary
 # Set the executable permission to read and execute only
 EXPOSE 3868
 
