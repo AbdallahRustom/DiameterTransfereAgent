@@ -1,4 +1,4 @@
-FROM dockerproxy.repos.tech.orange/alpine:3.20.3
+FROM dockerproxy.repos.tech.orange/alpine:3.20.3 AS builder
 ARG SRC_REPO_USER
 ARG SRC_REPO_PWD
 ARG SRC_REPO_URL=gitlab.tech.orange/win/oinis/olb-2g6/Diameter-Translation-Agent.git
@@ -31,11 +31,24 @@ RUN git checkout ${SRC_REPO_BRANCH}
 RUN go mod download && \
     go build -o myapp ./cmd/main.go
 
+
+FROM dockerproxy.repos.tech.orange/alpine:3.20.3
+RUN apk add --no-cache iproute2=6.9.0-r0 \ 
+    iputils=20240117-r0 \ 
+    git=2.45.2-r0 \
+    wget=1.24.5-r0 \
+    libssl3=3.3.2-r0 \
+    libcrypto3=3.3.2-r0
+
 RUN addgroup -g 1000 dta \
     && adduser -D -G dta dta -u 1000 -s /bin/sh \
-    && chown -R dta:dta /DiameterTransfereAgent
+    && mkdir /dta && chown dta:dta /dta
+USER 1000
+WORKDIR /dta
 
-USER 1000 
+COPY --chown=root:root --chmod=755 --from=builder /DiameterTransfereAgent/myapp /dta/myapp 
+COPY --chown=root:root --chmod=755 --from=builder /DiameterTransfereAgent/config.json /dta/config.json
+COPY --chown=root:root --chmod=755 --from=builder /DiameterTransfereAgent/dictionary /dta/dictionary
+EXPOSE 3868
 
-# Set the entry point
 ENTRYPOINT ["./myapp"]
