@@ -21,7 +21,7 @@ import (
 const (
 	VENDOR_3GPP           = 10415
 	S6B_APP_ID            = 16777272
-	defaultDictionaryPath = "./pkg/diameter/dictionary/"
+	defaultDictionaryPath = "./dictionary/"
 )
 
 type Server struct {
