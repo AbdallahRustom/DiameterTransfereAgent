@@ -46,7 +46,7 @@ RUN addgroup -g 1000 dta \
 USER 1000
 WORKDIR /dta
 
-COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/myapp /dta/myapp 
+COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/myapp ./myapp && chmod 755 ./myapp
 COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/config.json /dta/config.json
 COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/dictionary /dta/dictionary
 # Set the executable permission to read and execute only
