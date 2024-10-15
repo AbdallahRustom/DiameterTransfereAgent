@@ -34,21 +34,22 @@ RUN go mod download && \
 
 FROM dockerproxy.repos.tech.orange/alpine:3.20.3
 RUN apk add --no-cache iproute2=6.9.0-r0 \ 
-iputils=20240117-r0 \ 
-git=2.45.2-r0 \
-wget=1.24.5-r0 \
-libssl3=3.3.2-r0 \
-libcrypto3=3.3.2-r0
+    iputils=20240117-r0 \ 
+    git=2.45.2-r0 \
+    wget=1.24.5-r0 \
+    libssl3=3.3.2-r0 \
+    libcrypto3=3.3.2-r0
 
 RUN addgroup -g 1000 dta \
-&& adduser -D -G dta dta -u 1000 -s /bin/sh \
-&& mkdir /dta && chown dta:dta /dta
+    && adduser -D -G dta dta -u 1000 -s /bin/sh \
+    && mkdir /dta && chown dta:dta /dta
 USER 1000
 WORKDIR /dta
 
-COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/myapp ./myapp
-COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/config.json ./config.json
-COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/dictionary ./dictionary
+COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/myapp ./myapp && \ 
+    chmod 755 ./myapp
+COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/config.json /dta/config.json
+COPY --chown=dta:dta --from=builder /DiameterTransfereAgent/dictionary /dta/dictionary
 # Set the executable permission to read and execute only
 RUN chmod 755 ./myapp
 
